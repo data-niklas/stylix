@@ -5,7 +5,8 @@
     config.lib.stylix.mkEnableTarget "Tym" true;
 
   config = lib.mkIf config.stylix.targets.tym.enable {
-    xdg.configFile."tym/theme.lua".text = with config.lib.stylix.colors.withHashtag; ''
+    xdg.configFile."tym/theme.lua" = {
+      text = with config.lib.stylix.colors.withHashtag; ''
 local bg = '${base00}'
 local fg = '${base05}'
 return {
@@ -33,6 +34,9 @@ return {
   color_14 = '${base0F}',
   color_15 = '${base07}',
 }
+    '';
+    onChange = ''
+      dbus-send /me/endaaman/tym0 me.endaaman.tym.hook string:'reload_theme'
     '';
   };
 }

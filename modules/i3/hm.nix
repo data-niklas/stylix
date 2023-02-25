@@ -53,7 +53,7 @@ in {
           };
         };
 
-#        output."*".bg = "${config.stylix.image} fill";
+       output."*".bg = "${config.stylix.image} fill";
       };
     })
 
