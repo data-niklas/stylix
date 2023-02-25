@@ -1,11 +1,11 @@
-{ config, lib, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   options.stylix.targets.tym.enable =
     config.lib.stylix.mkEnableTarget "Tym" true;
 
   config = lib.mkIf config.stylix.targets.tym.enable {
-    home.packages = [ dbus ];
+    home.packages = [ pkgs.dbus ];
     xdg.configFile."tym/theme.lua" = {
       text = with config.lib.stylix.colors.withHashtag; ''
 local bg = '${base00}'
