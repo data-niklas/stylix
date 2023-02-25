@@ -5,6 +5,7 @@
     config.lib.stylix.mkEnableTarget "Tym" true;
 
   config = lib.mkIf config.stylix.targets.tym.enable {
+    home.packages = [ dbus ];
     xdg.configFile."tym/theme.lua" = {
       text = with config.lib.stylix.colors.withHashtag; ''
 local bg = '${base00}'
