@@ -37,7 +37,7 @@ return {
 }
     '';
     onChange = ''
-      dbus-send /me/endaaman/tym0 me.endaaman.tym.hook string:'reload_theme'
+      ${pkgs.dbus}/bin/dbus-send /me/endaaman/tym0 me.endaaman.tym.hook string:'reload_theme'
     '';
   };
   };
