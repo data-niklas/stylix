@@ -1,80 +1,56 @@
-{ pkgs, pkgsLib, coricamuLib, inputs, ... }:
+{ pkgs, lib, inputs, ... }:
 
-{
-  baseUrl = "https://danth.github.io/stylix/";
-  siteTitle = "Stylix";
-  language = "en-gb";
+let
+  makeOptionsDoc = configuration: pkgs.nixosOptionsDoc {
+    inherit (configuration) options;
 
-  header.html = ''
-    <h1>Stylix</h1>
-    <nav>
-      <a href="">Home</a>
-      <a href="options.html">NixOS options</a>
-      <a href="options-hm.html">Home Manager options</a>
-      <a href="https://github.com/danth/stylix">GitHub repository</a>
-    </nav>
+    # Filter out any options not beginning with `stylix`
+    transformOptions = option: option // {
+      visible = option.visible &&
+        builtins.elemAt option.loc 0 == "stylix";
+    };
+  };
+
+  nixos = makeOptionsDoc
+    (lib.nixosSystem {
+      inherit (pkgs) system;
+      modules = [
+        inputs.home-manager.nixosModules.home-manager
+        inputs.self.nixosModules.stylix
+        ./settings.nix
+      ];
+    });
+
+  homeManager = makeOptionsDoc
+    (inputs.home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      modules = [
+        inputs.self.homeManagerModules.stylix
+        ./settings.nix
+        {
+          home = {
+            homeDirectory = "/home/book";
+            stateVersion = "22.11";
+            username = "book";
+          };
+        }
+      ];
+    });
+
+in pkgs.stdenvNoCC.mkDerivation {
+  name = "stylix-book";
+  src = ./.;
+
+  patchPhase = ''
+    cp ${../README.md} src/README.md
+
+    # The "declared by" links point to a file which only exists when the docs
+    # are built locally. This removes the links.
+    sed '/*Declared by:*/,/^$/d' <${nixos.optionsCommonMark} >>src/options/nixos.md
+    sed '/*Declared by:*/,/^$/d' <${homeManager.optionsCommonMark} >>src/options/hm.md
   '';
 
-  pages = [
-    {
-      path = "index.html";
-      title = "Stylix";
-
-      body.markdownFile = pkgs.runCommand "index.md" {} ''
-        # Remove the title line
-        tail -n+2 ${../README.md} >$out
-      '';
-    }
-
-    {
-      path = "options.html";
-      title = "NixOS options";
-
-      body.docbook =
-        let
-          configuration = pkgsLib.nixosSystem {
-            inherit (pkgs) system;
-            modules = [
-              inputs.self.nixosModules.stylix
-              ./settings.nix
-              { _module.check = false; }
-            ];
-          };
-        in
-          builtins.readFile ./nixos_header.xml +
-          coricamuLib.makeOptionsDocBook {
-            inherit (configuration) options;
-            customFilter = option: builtins.elemAt option.loc 0 == "stylix";
-          };
-    }
-
-    {
-      path = "options-hm.html";
-      title = "Home Manager options";
-
-      body.docbook =
-        let
-          configuration = inputs.home-manager.lib.homeManagerConfiguration {
-            inherit pkgs;
-            modules = [
-              inputs.self.homeManagerModules.stylix
-              ./settings.nix
-              {
-                home = {
-                  homeDirectory = "/home/docs";
-                  stateVersion = "22.11";
-                  username = "docs";
-                };
-              }
-            ];
-            check = false;
-          };
-        in
-          builtins.readFile ./hm_header.xml +
-          coricamuLib.makeOptionsDocBook {
-            inherit (configuration) options;
-            customFilter = option: builtins.elemAt option.loc 0 == "stylix";
-          };
-    }
-  ];
+  buildPhase = ''
+    ${pkgs.mdbook}/bin/mdbook build --dest-dir $out
+  '';
 }

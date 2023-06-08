@@ -19,7 +19,7 @@ let
       )
 
       # Convert to .pf2
-      ${pkgs.grub2}/bin/grub-mkfont $font --output $out --size 17
+      ${pkgs.grub2}/bin/grub-mkfont $font --output $out --size ${toString sizes.applications}
     '';
 
 in {
@@ -27,7 +27,7 @@ in {
     enable = config.lib.stylix.mkEnableTarget "GRUB" true;
 
     useImage = lib.mkOption {
-      description = "Whether to use your wallpaper image as the GRUB background.";
+      description = lib.mdDoc "Whether to use your wallpaper image as the GRUB background.";
       type = lib.types.bool;
       default = false;
     };

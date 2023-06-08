@@ -8,14 +8,15 @@ in {
   imports = [
     ../pixel.nix
     ../target.nix
+    ../opacity.nix
     ./fonts.nix
     (import ./palette.nix { inherit palette-generator base16; })
   ] ++ autoload;
 
   options.stylix.homeManagerIntegration = {
     followSystem = lib.mkOption {
-      description = ''
-        When this option is <literal>true</literal>, Home Manager will follow
+      description = lib.mdDoc ''
+        When this option is `true`, Home Manager will follow
         the system theme by default, rather than requiring a theme to be set.
 
         This will only affect Home Manager configurations which are built
@@ -26,7 +27,7 @@ in {
     };
 
     autoImport = lib.mkOption {
-      description = ''
+      description = lib.mdDoc ''
         Whether to enable Stylix automatically for every user.
 
         This only applies to users for which Home Manager is set up within the
@@ -34,13 +35,13 @@ in {
       '';
       type = lib.types.bool;
       default = options ? home-manager;
-      defaultText = lib.literalDocBook ''
-        <literal>true</literal> when Home Manager is present.
+      defaultText = lib.literalMD ''
+        `true` when Home Manager is present.
       '';
     };
   };
 
-  config = lib.mkIf hm.autoImport {
+  config = lib.optionalAttrs (options ? home-manager) (lib.mkIf hm.autoImport {
     home-manager.sharedModules = [ homeManagerModule ];
-  };
+  });
 }

@@ -23,7 +23,9 @@ in
           family = monospace.name;
           style = "Regular";
         };
+        size = sizes.terminal;
       };
+      window.opacity = with config.stylix.opacity; terminal;
       import = [ themeFile ];
     };
   };

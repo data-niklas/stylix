@@ -1,4 +1,4 @@
-{ pkgs,  config }:
+{ pkgs, config, ... }:
 
 let
   colors = config.lib.stylix.colors {
@@ -9,9 +9,12 @@ let
 in pkgs.stdenv.mkDerivation {
   name = "stylix-gnome-shell-theme";
 
-  src = pkgs.fetchurl {
-    url = "mirror://gnome/sources/gnome-shell/43/gnome-shell-43.2.tar.xz";
-    sha256 = "52/UvpNCQQ7p+9zday2Bxv8GDnyMxaDxyuanq6JdGGA=";
+  src = pkgs.fetchFromGitLab {
+    domain = "gitlab.gnome.org";
+    owner = "GNOME";
+    repo = "gnome-shell";
+    rev = "44.1";
+    sha256 = "h9TBLGakXffEvuP+0dVHmG7+TV5J6CdM/3KHFNUuc70=";
   };
 
   patches = [ ./shell_colors.patch ];
